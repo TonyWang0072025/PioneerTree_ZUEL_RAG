@@ -8,13 +8,17 @@
     "build": "vite build",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:build": "vite build && electron-builder",
-    "prepare-data": "node scripts/prepare-data.js",
+    "prepare-data": "electron scripts/prepare-data.js",
     "postinstall": "electron-rebuild -f -w better-sqlite3"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "better-sqlite3": "^11.10.0",
+    "katex": "^0.17.0",
+    "mammoth": "^1.12.0",
+    "marked": "^18.0.4",
+    "pdf-parse": "^2.4.5",
     "vue": "^3.5.35"
   },
   "devDependencies": {

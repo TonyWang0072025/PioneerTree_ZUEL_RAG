@@ -8,11 +8,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   showSaveDialog: (defaultName) => ipcRenderer.invoke('show-save-dialog', defaultName),
   showItemInFolder: (filePath) => ipcRenderer.invoke('show-item-in-folder', filePath),
 
-  // Database operations (to be expanded)
-  dbQuery: (sql, params) => ipcRenderer.invoke('db-query', sql, params),
-  dbRun: (sql, params) => ipcRenderer.invoke('db-run', sql, params),
-
-  // Document operations (to be expanded)
+  // Document search & retrieval
   searchDocuments: (query, subject) => ipcRenderer.invoke('search-documents', query, subject),
-  getDocumentPreview: (docPath, fileType) => ipcRenderer.invoke('get-document-preview', docPath, fileType)
+  getDocumentContent: (docId) => ipcRenderer.invoke('get-document-content', docId),
+  listDocuments: (subject) => ipcRenderer.invoke('list-documents', subject),
+  getSubjects: () => ipcRenderer.invoke('get-subjects'),
+
+  // Knowledge chunks
+  searchKnowledge: (keyword, subject) => ipcRenderer.invoke('search-knowledge', keyword, subject)
 })
