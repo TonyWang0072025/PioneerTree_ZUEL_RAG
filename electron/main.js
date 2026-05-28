@@ -103,9 +103,104 @@ ipcMain.handle('get-subjects', async () => {
   }
 })
 
-// DeepSeek API proxy (placeholder)
+// Settings: get API key
+ipcMain.handle('get-api-key', async () => {
+  try {
+    const key = db.getSetting('deepseek_api_key')
+    return { success: true, data: key || '' }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+})
+
+// Settings: save API key
+ipcMain.handle('save-api-key', async (_event, apiKey) => {
+  try {
+    db.saveSetting('deepseek_api_key', apiKey)
+    return { success: true }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+})
+
+// Notes: save
+ipcMain.handle('save-note', async (_event, title, markdown) => {
+  try {
+    const note = db.saveNote(title, markdown)
+    return { success: true, data: note }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+})
+
+// Notes: list all
+ipcMain.handle('list-notes', async () => {
+  try {
+    return { success: true, data: db.listNotes() }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+})
+
+// Notes: get single
+ipcMain.handle('get-note', async (_event, id) => {
+  try {
+    const note = db.getNote(id)
+    if (!note) return { success: false, error: '笔记不存在' }
+    return { success: true, data: note }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+})
+
+// DeepSeek API proxy
 ipcMain.handle('call-deepseek', async (_event, messages) => {
-  return { offline: true, message: 'AI 服务暂未配置' }
+  const apiKey = db.getSetting('deepseek_api_key')
+  if (!apiKey) {
+    return { offline: true, message: 'AI 服务不可用：请先在设置中配置 API Key' }
+  }
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 15000)
+
+  try {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages,
+        temperature: 0.7,
+        max_tokens: 1024
+      }),
+      signal: controller.signal
+    })
+
+    clearTimeout(timeout)
+
+    if (!response.ok) {
+      const errText = await response.text()
+      console.error('[DeepSeek] API error:', response.status, errText)
+      return { offline: true, message: `AI 服务请求失败 (${response.status})` }
+    }
+
+    const data = await response.json()
+    return {
+      offline: false,
+      content: data.choices?.[0]?.message?.content || ''
+    }
+  } catch (err) {
+    clearTimeout(timeout)
+    if (err.name === 'AbortError') {
+      console.warn('[DeepSeek] Request timed out')
+      return { offline: true, message: 'AI 服务请求超时，请检查网络后重试' }
+    }
+    console.error('[DeepSeek] Network error:', err.message)
+    return { offline: true, message: 'AI 服务不可用：网络连接失败' }
+  }
 })
 
 // File dialog for exporting notes

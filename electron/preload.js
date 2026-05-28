@@ -4,6 +4,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // DeepSeek AI proxy
   callDeepSeek: (messages) => ipcRenderer.invoke('call-deepseek', messages),
 
+  // Settings
+  getApiKey: () => ipcRenderer.invoke('get-api-key'),
+  saveApiKey: (apiKey) => ipcRenderer.invoke('save-api-key', apiKey),
+
+  // Notes
+  saveNote: (title, markdown) => ipcRenderer.invoke('save-note', title, markdown),
+  listNotes: () => ipcRenderer.invoke('list-notes'),
+  getNote: (id) => ipcRenderer.invoke('get-note', id),
+
   // File operations
   showSaveDialog: (defaultName) => ipcRenderer.invoke('show-save-dialog', defaultName),
   showItemInFolder: (filePath) => ipcRenderer.invoke('show-item-in-folder', filePath),

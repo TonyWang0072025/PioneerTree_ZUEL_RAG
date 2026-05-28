@@ -182,6 +182,41 @@ function closeDatabase() {
   }
 }
 
+// ---- Settings CRUD ----
+
+function getSetting(key) {
+  if (!db) throw new Error('Database not initialized')
+  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key)
+  return row ? row.value : null
+}
+
+function saveSetting(key, value) {
+  if (!db) throw new Error('Database not initialized')
+  db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(key, value)
+}
+
+// ---- Notes CRUD ----
+
+function saveNote(title, markdown) {
+  if (!db) throw new Error('Database not initialized')
+  const info = db.prepare(
+    'INSERT INTO user_notes (title, markdown) VALUES (?, ?)'
+  ).run(title, markdown)
+  return { id: info.lastInsertRowid, title, markdown }
+}
+
+function listNotes() {
+  if (!db) throw new Error('Database not initialized')
+  return db.prepare(
+    'SELECT id, title, created_at FROM user_notes ORDER BY created_at DESC'
+  ).all()
+}
+
+function getNote(id) {
+  if (!db) throw new Error('Database not initialized')
+  return db.prepare('SELECT * FROM user_notes WHERE id = ?').get(id) || null
+}
+
 module.exports = {
   initDatabase,
   searchDocuments,
@@ -189,5 +224,10 @@ module.exports = {
   searchKnowledgeChunks,
   listDocumentsBySubject,
   getAvailableSubjects,
+  getSetting,
+  saveSetting,
+  saveNote,
+  listNotes,
+  getNote,
   closeDatabase
 }

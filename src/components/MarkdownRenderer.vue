@@ -1,49 +1,35 @@
 <template>
-  <div class="markdown-body prose max-w-none" v-html="renderedHtml"></div>
+  <div ref="rootRef" class="markdown-body prose max-w-none" v-html="renderedHtml" @dblclick="onDblClick" />
+  <FloatingTooltip ref="tooltipRef" />
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { marked } from 'marked'
 import katex from 'katex'
+import FloatingTooltip from './FloatingTooltip.vue'
 
 const props = defineProps({
-  markdown: { type: String, default: '' }
+  markdown: { type: String, default: '' },
+  subject: { type: String, default: '' }
 })
 
-// Configure marked for safe rendering
-marked.setOptions({
-  breaks: true,
-  gfm: true
-})
+const rootRef = ref(null)
+const tooltipRef = ref(null)
 
-/**
- * Render math expressions with KaTeX.
- * Handles $...$ (inline) and $$...$$ (block display).
- */
+marked.setOptions({ breaks: true, gfm: true })
+
 function renderMath(text) {
-  // Process block math first ($$...$$)
   let result = text.replace(/\$\$([\s\S]*?)\$\$/g, (_match, formula) => {
     try {
-      return katex.renderToString(formula.trim(), {
-        displayMode: true,
-        throwOnError: false
-      })
-    } catch {
-      return `<pre>${formula}</pre>`
-    }
+      return katex.renderToString(formula.trim(), { displayMode: true, throwOnError: false })
+    } catch { return `<pre>${formula}</pre>` }
   })
 
-  // Then inline math ($...$), but not double $
   result = result.replace(/(?<!\$)\$(?!\$)([\s\S]*?)(?<!\$)\$(?!\$)/g, (_match, formula) => {
     try {
-      return katex.renderToString(formula.trim(), {
-        displayMode: false,
-        throwOnError: false
-      })
-    } catch {
-      return `<code>${formula}</code>`
-    }
+      return katex.renderToString(formula.trim(), { displayMode: false, throwOnError: false })
+    } catch { return `<code>${formula}</code>` }
   })
 
   return result
@@ -51,18 +37,55 @@ function renderMath(text) {
 
 const renderedHtml = computed(() => {
   if (!props.markdown) return ''
-  // First pass: render math, then pass through marked for markdown
-  // Math blocks use raw HTML that marked will preserve
-  const withMath = renderMath(props.markdown)
-  return marked.parse(withMath)
+  return marked.parse(renderMath(props.markdown))
 })
+
+async function onDblClick(event) {
+  const selection = window.getSelection()
+  const word = selection?.toString().trim()
+  if (!word || word.length < 2 || word.length > 30) return
+
+  const rect = rootRef.value?.getBoundingClientRect()
+  const x = event.clientX
+  const y = rect ? rect.bottom - 8 : event.clientY
+
+  tooltipRef.value?.show(word, x, y)
+
+  let localChunks = []
+  let aiText = ''
+
+  // 1. Search local knowledge chunks
+  if (window.electronAPI && props.subject) {
+    try {
+      const result = await window.electronAPI.searchKnowledge(word, props.subject)
+      if (result.success) localChunks = result.data
+    } catch { /* ignore */ }
+  }
+
+  // 2. Try AI enhancement
+  if (window.electronAPI) {
+    try {
+      const contextPrompt = localChunks.length > 0
+        ? `参考以下资料片段：\n${localChunks.map(c => c.content).join('\n---\n')}`
+        : ''
+      const aiResult = await window.electronAPI.callDeepSeek([
+        { role: 'system', content: `你是${props.subject || '学科'}领域的辅导老师。请用1-2句简洁的话解释以下专业名词，帮助中南大学生期末复习。${contextPrompt}` },
+        { role: 'user', content: `请解释：${word}` }
+      ])
+      if (!aiResult.offline && aiResult.content) {
+        aiText = aiResult.content
+      }
+    } catch { /* ignore */ }
+  }
+
+  tooltipRef.value?.setResults(localChunks, aiText)
+  tooltipRef.value?.autoDismiss(5000)
+}
 </script>
 
 <style>
-/* KaTeX requires its CSS; import once at component level */
 @import 'katex/dist/katex.min.css';
 
-/* Minimal prose baseline (Tailwind v4 prose not yet configured) */
 .markdown-body {
   line-height: 1.8;
   color: #333333;
