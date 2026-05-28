@@ -1,0 +1,45 @@
+# ========================
+# Node.js & 依赖
+# ========================
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# ========================
+# Vue & Electron 构建输出
+# ========================
+dist/
+dist-electron/
+release/
+out/
+build/
+*.exe
+*.dmg
+*.AppImage
+
+# ========================
+# 本地数据库与预处理产物 (根据 PRD 设计)
+# ========================
+# 忽略脚本自动生成的预处理文件夹
+resources/dist-data/
+resources/documents/
+
+# 忽略用户本地生成的数据库，防止上传到云端覆盖
+userdata.db
+userdata.db-journal
+userdata.db-wal
+userdata.db-shm
+temp-index.db
+
+# ========================
+# 编辑器 & 系统文件
+# ========================
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
