@@ -1,0 +1,33 @@
+{
+  "name": "ptzr",
+  "version": "1.0.0",
+  "description": "前人树 - AI 辅助期末复习桌面应用（专为中南大打造）",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "vite build && electron-builder",
+    "prepare-data": "node scripts/prepare-data.js",
+    "postinstall": "electron-rebuild -f -w better-sqlite3"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "vue": "^3.5.35"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.4",
+    "@tailwindcss/vite": "^4.3.0",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "autoprefixer": "^10.5.0",
+    "concurrently": "^9.2.1",
+    "electron": "^28.3.3",
+    "electron-builder": "^26.8.1",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.0",
+    "vite": "^8.0.14",
+    "wait-on": "^9.0.10"
+  }
+}
