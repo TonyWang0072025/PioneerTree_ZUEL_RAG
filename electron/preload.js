@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Document search & retrieval
   searchDocuments: (query, subject) => ipcRenderer.invoke('search-documents', query, subject),
   getDocumentContent: (docId) => ipcRenderer.invoke('get-document-content', docId),
+  getDocumentFile: (docPath) => ipcRenderer.invoke('get-document-file', docPath),
   listDocuments: (subject) => ipcRenderer.invoke('list-documents', subject),
   getSubjects: () => ipcRenderer.invoke('get-subjects'),
 

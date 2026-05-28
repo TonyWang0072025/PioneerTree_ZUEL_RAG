@@ -17,8 +17,18 @@ const tasks = [
     name: 'Vditor',
     src: path.join(ROOT, 'node_modules', 'vditor', 'dist'),
     dest: path.join(PUBLIC, 'vditor'),
-    // Files/dirs from dist/ to copy
     items: ['css', 'js', 'images', 'index.css', 'index.js', 'index.min.js', 'method.js', 'method.min.js']
+  },
+  {
+    name: 'PDF.js',
+    src: path.join(ROOT, 'node_modules', 'pdfjs-dist'),
+    dest: path.join(PUBLIC, 'pdfjs'),
+    items: [
+      'build/pdf.min.mjs',
+      'build/pdf.worker.min.mjs',
+      'build/pdf.sandbox.min.mjs',
+      'cmaps'
+    ]
   }
 ]
 

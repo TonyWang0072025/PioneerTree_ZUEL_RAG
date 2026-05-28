@@ -203,6 +203,22 @@ ipcMain.handle('call-deepseek', async (_event, messages) => {
   }
 })
 
+// Database: read raw document file (for PDF/DOCX preview)
+ipcMain.handle('get-document-file', async (_event, docPath) => {
+  try {
+    const resourcesPath = process.resourcesPath || path.join(__dirname, '..', 'resources')
+    const fullPath = path.join(resourcesPath, 'documents', docPath)
+    const fs = require('fs')
+    if (!fs.existsSync(fullPath)) {
+      return { success: false, error: '文件不存在' }
+    }
+    const buffer = fs.readFileSync(fullPath)
+    return { success: true, data: buffer.toString('base64'), size: buffer.length }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+})
+
 // File dialog for exporting notes
 ipcMain.handle('show-save-dialog', async (_event, defaultName) => {
   const result = await dialog.showSaveDialog(mainWindow, {
