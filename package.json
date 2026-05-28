@@ -4,6 +4,7 @@
   "description": "前人树 - AI 辅助期末复习桌面应用（专为中南大打造）",
   "main": "electron/main.js",
   "scripts": {
+    "start": "npm run electron:dev",
     "dev": "vite",
     "build": "npm run copy-assets && vite build",
     "copy-assets": "node scripts/copy-vendor-assets.js",

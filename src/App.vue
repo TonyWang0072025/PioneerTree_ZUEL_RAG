@@ -7,7 +7,7 @@
         <button
           v-for="tab in tabs"
           :key="tab.path"
-          @click="$router.push(tab.path)"
+          @click="navigate(tab.path)"
           class="px-5 h-full flex items-center text-sm font-medium border-b-[3px] border-transparent transition-colors"
           :class="[
             isActive(tab.path)
@@ -29,9 +29,10 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 
 const tabs = [
   { label: '法学', path: '/law', color: '#012d6a' },
@@ -40,6 +41,10 @@ const tabs = [
   { label: '文档库', path: '/docs', color: '#0068ef' },
   { label: '设置', path: '/settings', color: '#0068ef' }
 ]
+
+function navigate(path) {
+  if (route.path !== path) router.push(path)
+}
 
 function isActive(path) {
   return route.path === path || (path === '/law' && route.path === '/')

@@ -16,7 +16,8 @@ const tasks = [
   {
     name: 'Vditor',
     src: path.join(ROOT, 'node_modules', 'vditor', 'dist'),
-    dest: path.join(PUBLIC, 'vditor'),
+    // Vditor 内部用 ${cdn}/dist/js/... 拼接路径，所以必须嵌套在 dist/ 子目录下
+    dest: path.join(PUBLIC, 'vditor', 'dist'),
     items: ['css', 'js', 'images', 'index.css', 'index.js', 'index.min.js', 'method.js', 'method.min.js']
   },
   {
