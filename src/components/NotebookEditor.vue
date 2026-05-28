@@ -23,6 +23,11 @@
       >
         {{ saving ? '...' : '保存' }}
       </button>
+      <button
+        @click="handleExport"
+        class="shrink-0 px-2 py-1 text-xs text-gray-500 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+        title="导出 .md 文件"
+      >导出</button>
     </div>
 
     <!-- Editor area -->
@@ -152,6 +157,22 @@ async function loadNote(note) {
     }
   }
   showDrawer.value = false
+}
+
+async function handleExport() {
+  if (!vditorInstance || !window.electronAPI) return
+  const markdown = vditorInstance.getValue()
+  const defaultName = (noteTitle.value.trim() || '笔记') + '.md'
+
+  const dialog = await window.electronAPI.showSaveDialog(defaultName)
+  if (dialog.canceled || !dialog.filePath) return
+
+  const write = await window.electronAPI.writeFile(dialog.filePath, markdown)
+  if (write.success) {
+    showToast('已导出: ' + dialog.filePath.split(/[\\/]/).pop())
+  } else {
+    showToast('导出失败: ' + write.error)
+  }
 }
 
 function showToast(msg) {

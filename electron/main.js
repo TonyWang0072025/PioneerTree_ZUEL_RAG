@@ -219,6 +219,64 @@ ipcMain.handle('get-document-file', async (_event, docPath) => {
   }
 })
 
+// Bookmarks: add
+ipcMain.handle('add-bookmark', async (_event, targetType, targetId) => {
+  try {
+    db.addBookmark(targetType, targetId)
+    return { success: true }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+})
+
+// Bookmarks: remove
+ipcMain.handle('remove-bookmark', async (_event, targetType, targetId) => {
+  try {
+    db.removeBookmark(targetType, targetId)
+    return { success: true }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+})
+
+// Bookmarks: check status
+ipcMain.handle('check-bookmark', async (_event, targetType, targetId) => {
+  try {
+    return { success: true, data: db.isBookmarked(targetType, targetId) }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+})
+
+// Bookmarks: list all
+ipcMain.handle('list-bookmarks', async () => {
+  try {
+    return { success: true, data: db.listBookmarks() }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+})
+
+// Quiz: get random questions by subject
+ipcMain.handle('get-random-questions', async (_event, subject, limit) => {
+  try {
+    const questions = db.getRandomQuestions(subject, limit || 20)
+    return { success: true, data: questions }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+})
+
+// File: write content to disk (for note export)
+ipcMain.handle('write-file', async (_event, filePath, content) => {
+  try {
+    require('fs').writeFileSync(filePath, content, 'utf-8')
+    return { success: true }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+})
+
 // File dialog for exporting notes
 ipcMain.handle('show-save-dialog', async (_event, defaultName) => {
   const result = await dialog.showSaveDialog(mainWindow, {

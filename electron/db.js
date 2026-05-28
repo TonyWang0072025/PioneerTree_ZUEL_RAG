@@ -217,6 +217,55 @@ function getNote(id) {
   return db.prepare('SELECT * FROM user_notes WHERE id = ?').get(id) || null
 }
 
+// ---- Bookmarks CRUD ----
+
+function addBookmark(targetType, targetId) {
+  if (!db) throw new Error('Database not initialized')
+  // Avoid duplicates
+  const existing = db.prepare(
+    'SELECT id FROM bookmarks WHERE target_type = ? AND target_id = ?'
+  ).get(targetType, targetId)
+  if (existing) return existing
+  const info = db.prepare(
+    'INSERT INTO bookmarks (target_type, target_id) VALUES (?, ?)'
+  ).run(targetType, targetId)
+  return { id: info.lastInsertRowid }
+}
+
+function removeBookmark(targetType, targetId) {
+  if (!db) throw new Error('Database not initialized')
+  db.prepare(
+    'DELETE FROM bookmarks WHERE target_type = ? AND target_id = ?'
+  ).run(targetType, targetId)
+}
+
+function isBookmarked(targetType, targetId) {
+  if (!db) throw new Error('Database not initialized')
+  const row = db.prepare(
+    'SELECT id FROM bookmarks WHERE target_type = ? AND target_id = ?'
+  ).get(targetType, targetId)
+  return !!row
+}
+
+function listBookmarks() {
+  if (!db) throw new Error('Database not initialized')
+  return db.prepare(
+    'SELECT * FROM bookmarks ORDER BY id DESC'
+  ).all()
+}
+
+// ---- Question Bank ----
+
+function getRandomQuestions(subject, limit = 20) {
+  if (!db) throw new Error('Database not initialized')
+  return db.prepare(`
+    SELECT * FROM question_bank
+    WHERE subject = ?
+    ORDER BY RANDOM()
+    LIMIT ?
+  `).all(subject, limit)
+}
+
 module.exports = {
   initDatabase,
   searchDocuments,
@@ -229,5 +278,10 @@ module.exports = {
   saveNote,
   listNotes,
   getNote,
+  addBookmark,
+  removeBookmark,
+  isBookmarked,
+  listBookmarks,
+  getRandomQuestions,
   closeDatabase
 }

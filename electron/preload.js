@@ -13,9 +13,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   listNotes: () => ipcRenderer.invoke('list-notes'),
   getNote: (id) => ipcRenderer.invoke('get-note', id),
 
+  // Bookmarks
+  addBookmark: (targetType, targetId) => ipcRenderer.invoke('add-bookmark', targetType, targetId),
+  removeBookmark: (targetType, targetId) => ipcRenderer.invoke('remove-bookmark', targetType, targetId),
+  checkBookmark: (targetType, targetId) => ipcRenderer.invoke('check-bookmark', targetType, targetId),
+  listBookmarks: () => ipcRenderer.invoke('list-bookmarks'),
+
+  // Quiz
+  getRandomQuestions: (subject, limit) => ipcRenderer.invoke('get-random-questions', subject, limit),
+
   // File operations
   showSaveDialog: (defaultName) => ipcRenderer.invoke('show-save-dialog', defaultName),
   showItemInFolder: (filePath) => ipcRenderer.invoke('show-item-in-folder', filePath),
+  writeFile: (filePath, content) => ipcRenderer.invoke('write-file', filePath, content),
 
   // Document search & retrieval
   searchDocuments: (query, subject) => ipcRenderer.invoke('search-documents', query, subject),

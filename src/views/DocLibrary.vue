@@ -35,15 +35,20 @@
           v-for="doc in results"
           :key="doc.id"
           @click="selectDoc(doc)"
-          class="w-full text-left px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors"
+          class="w-full text-left px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors relative"
           :class="{ 'bg-blue-50 border-l-2 border-l-[#0068ef]': selectedDoc?.id === doc.id }"
         >
-          <div class="text-sm font-medium text-gray-800 truncate">{{ doc.filename }}</div>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="text-xs px-1.5 py-0.5 rounded" :style="{ background: subjectColor(doc.subject), color: '#fff' }">
-              {{ doc.subject }}
-            </span>
-            <span class="text-xs text-gray-400">{{ doc.path }}</span>
+          <div class="flex items-start justify-between">
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium text-gray-800 truncate">{{ doc.filename }}</div>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-xs px-1.5 py-0.5 rounded" :style="{ background: subjectColor(doc.subject), color: '#fff' }">
+                  {{ doc.subject }}
+                </span>
+                <span class="text-xs text-gray-400">{{ doc.path }}</span>
+              </div>
+            </div>
+            <BookmarkStar target-type="document" :target-id="doc.id" @click.stop />
           </div>
           <div v-if="doc.snippet" class="text-xs text-gray-500 mt-1.5 leading-relaxed" v-html="doc.snippet" />
         </button>
@@ -100,6 +105,7 @@
 <script setup>
 import { ref, nextTick } from 'vue'
 import MarkdownRenderer from '../components/MarkdownRenderer.vue'
+import BookmarkStar from '../components/BookmarkStar.vue'
 
 const searchQuery = ref('')
 const subjectFilter = ref('')
