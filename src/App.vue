@@ -1,33 +1,47 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center p-8">
-    <h1 class="text-3xl font-bold text-[#012d6a] mb-6">前人树</h1>
-    <div class="max-w-2xl w-full border rounded-lg p-6">
-      <MarkdownRenderer :markdown="sampleMarkdown" />
-    </div>
+  <div class="h-screen flex flex-col overflow-hidden">
+    <!-- Top Navigation Bar: 56px -->
+    <nav class="h-14 flex items-center px-4 bg-white border-b border-gray-200 shrink-0 select-none">
+      <span class="text-lg font-bold mr-8" style="color: #012d6a">前人树</span>
+      <div class="flex gap-1 h-full">
+        <button
+          v-for="tab in tabs"
+          :key="tab.path"
+          @click="$router.push(tab.path)"
+          class="px-5 h-full flex items-center text-sm font-medium border-b-[3px] border-transparent transition-colors"
+          :class="[
+            isActive(tab.path)
+              ? 'border-current'
+              : 'text-gray-500 hover:text-gray-700'
+          ]"
+          :style="isActive(tab.path) ? { color: tab.color, borderBottomColor: tab.color } : {}"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content Area (fills remaining height) -->
+    <main class="flex-1 overflow-hidden">
+      <router-view />
+    </main>
   </div>
 </template>
 
 <script setup>
-import MarkdownRenderer from './components/MarkdownRenderer.vue'
+import { useRoute } from 'vue-router'
 
-const sampleMarkdown = `## 欢迎使用前人树
+const route = useRoute()
 
-这是一段 **Markdown** 示例文本，支持 *斜体* 和行内代码 \`const x = 1\`。
+const tabs = [
+  { label: '法学', path: '/law', color: '#012d6a' },
+  { label: '数学', path: '/math', color: '#5d9b50' },
+  { label: '经管', path: '/econ', color: '#e42312' },
+  { label: '文档库', path: '/docs', color: '#0068ef' },
+  { label: '设置', path: '/settings', color: '#0068ef' }
+]
 
-### 数学公式
-
-行内公式：$E = mc^2$
-
-块级公式：
-
-$$
-\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}
-$$
-
-> 引用：前人栽树，后人乘凉。
-
-- 法学
-- 数学
-- 经管
-`
+function isActive(path) {
+  return route.path === path || (path === '/law' && route.path === '/')
+}
 </script>

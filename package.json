@@ -5,9 +5,10 @@
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run copy-assets && vite build",
+    "copy-assets": "node scripts/copy-vendor-assets.js",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "vite build && electron-builder",
+    "electron:build": "npm run copy-assets && vite build && electron-builder",
     "prepare-data": "electron scripts/prepare-data.js",
     "postinstall": "electron-rebuild -f -w better-sqlite3"
   },
@@ -19,7 +20,9 @@
     "mammoth": "^1.12.0",
     "marked": "^18.0.4",
     "pdf-parse": "^2.4.5",
-    "vue": "^3.5.35"
+    "vditor": "^3.11.2",
+    "vue": "^3.5.35",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@electron/rebuild": "^4.0.4",
