@@ -44,13 +44,6 @@
             {{ tab.label }}
           </button>
         </div>
-        <div class="sidebar-footer">
-          <div class="avatar">ZJ</div>
-          <div class="sidebar-user-info">
-            <div class="sidebar-user-name">周杰</div>
-            <div class="sidebar-user-role">学习中</div>
-          </div>
-        </div>
       </nav>
 
       <!-- Main content -->
@@ -61,29 +54,46 @@
 
     <!-- Status bar (28px) -->
     <div class="statusbar">
-      <div class="statusbar-dot"></div>
-      <span>DeepSeek API 已连接</span>
+      <div
+        class="statusbar-dot"
+        :style="{ background: apiConnected ? 'var(--accent-tertiary)' : 'var(--fg-muted)' }"
+      ></div>
+      <span>{{ apiConnected ? 'DeepSeek API 已连接' : '未配置 API Key — 请在设置中配置' }}</span>
       <span style="margin-left:auto">前人树 v1.0.0</span>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
 
 const mainTabs = [
-  { label: '法学', path: '/law', icon: '⚖', color: '#1B4965' },
-  { label: '数学', path: '/math', icon: '∑', color: '#81B29A' },
-  { label: '经管', path: '/econ', icon: '📊', color: '#E07A5F' },
-  { label: '文档库', path: '/docs', icon: '📁', color: '#1B4965' }
+  { label: '法学', path: '/law', icon: '⚖' },
+  { label: '数学', path: '/math', icon: '∑' },
+  { label: '经管', path: '/econ', icon: '📊' },
+  { label: '文档库', path: '/docs', icon: '📁' }
 ]
 
 const bottomTabs = [
-  { label: '设置', path: '/settings', icon: '⚙', color: '#1B4965' }
+  { label: '设置', path: '/settings', icon: '⚙' }
 ]
+
+const apiConnected = ref(false)
+
+onMounted(async () => {
+  if (window.electronAPI) {
+    try {
+      const result = await window.electronAPI.getApiKey()
+      apiConnected.value = !!(result.success && result.data)
+    } catch {
+      apiConnected.value = false
+    }
+  }
+})
 
 function navigate(path) {
   if (route.path !== path) router.push(path)

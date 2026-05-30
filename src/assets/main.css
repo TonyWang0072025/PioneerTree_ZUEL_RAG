@@ -490,6 +490,62 @@ body {
   overflow-y: auto;
 }
 
+/* ===== 笔记面板 Tabs ===== */
+.notes-tabs {
+  display: flex; gap: 2px;
+}
+.notes-tab-btn {
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 0.8rem; font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-body);
+}
+.notes-tab-btn:hover { color: var(--fg-secondary); background: var(--surface-alt); }
+.notes-tab-btn.active {
+  background: rgba(27,73,101,0.08);
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+/* ===== 可拖拽分割把手 ===== */
+.resize-handle {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.15s;
+  flex-shrink: 0;
+  position: relative;
+}
+.resize-handle:hover,
+.resize-handle.dragging {
+  background: var(--accent-primary);
+  opacity: 0.25;
+}
+
+/* ===== 折叠按钮 ===== */
+.panel-toggle-btn {
+  width: 24px; height: 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-muted);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.panel-toggle-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: var(--surface-alt);
+}
+
 /* ===== 输入字段 ===== */
 .input-field {
   flex: 1;

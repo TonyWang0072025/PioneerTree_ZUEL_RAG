@@ -1,5 +1,10 @@
 <template>
-  <SubjectLayout subject="法学" theme-color="#1B4965">
+  <SubjectLayout
+    ref="layoutRef"
+    subject="法学"
+    theme-color="#1B4965"
+    :show-ai-tab="currentMode === 'lawstudent'"
+  >
     <div class="law-content">
       <!-- Page header -->
       <div class="page-header">
@@ -46,13 +51,9 @@
               <span class="char-count">{{ clozeSource.length }} 字</span>
             </div>
 
-            <button
-              @click="generateCloze"
-              class="btn btn-primary"
-            >生成挖空</button>
+            <button @click="generateCloze" class="btn btn-primary">生成挖空</button>
           </div>
 
-          <!-- Cloze result -->
           <div v-if="clozeItems.length > 0" class="card">
             <div class="card-header">
               <div class="icon green">✓</div>
@@ -61,12 +62,7 @@
                 <div class="card-subtitle">输入答案后自动比对</div>
               </div>
             </div>
-
-            <div
-              v-for="(item, idx) in clozeItems"
-              :key="idx"
-              class="result-text mb-3"
-            >
+            <div v-for="(item, idx) in clozeItems" :key="idx" class="result-text mb-3">
               <template v-for="(seg, si) in item.segments" :key="si">
                 <span v-if="seg.type === 'text'">{{ seg.value }}</span>
                 <input
@@ -86,7 +82,6 @@
             </div>
           </div>
 
-          <!-- Sample -->
           <div class="card">
             <div class="card-header">
               <div class="icon orange">📖</div>
@@ -112,12 +107,10 @@
                 <div class="card-subtitle">逐句默写，核对与原文的偏差</div>
               </div>
             </div>
-
             <div class="tip-box">
               <span class="tip-icon">💡</span>
               <span>左侧粘贴法条原文，右侧逐句默写。系统自动逐句比对。</span>
             </div>
-
             <div class="flex gap-4 mb-4">
               <div class="flex-1">
                 <div class="text-xs text-gray-400 mb-1">原文</div>
@@ -138,8 +131,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Align result -->
           <div v-if="alignResult.length > 0" class="card">
             <div class="card-header">
               <div class="icon green">✓</div>
@@ -234,33 +225,28 @@
       </div>
     </div>
 
-    <!-- Override right panel for law-student mode: AI response -->
-    <template v-if="currentMode === 'lawstudent'" #notebook>
-      <div class="flex flex-col h-full">
-        <div class="notes-header">
-          <div class="notes-title"><span class="dot"></span>AI 法学导师</div>
-        </div>
-        <div class="flex-1 overflow-y-auto p-4">
-          <!-- Loading -->
-          <div v-if="lsLoading" class="flex items-center justify-center h-full">
-            <div class="text-center">
-              <div class="animate-spin w-8 h-8 border-2 border-[#1B4965] border-t-transparent rounded-full mx-auto mb-2" />
-              <div class="text-sm text-gray-400">AI 正在分析...</div>
-            </div>
+    <!-- AI Tutor tab content (shown in right panel when tabs are active) -->
+    <template #ai-tutor>
+      <div class="p-4">
+        <!-- Loading -->
+        <div v-if="lsLoading" class="flex items-center justify-center h-64">
+          <div class="text-center">
+            <div class="animate-spin w-8 h-8 border-2 border-[#1B4965] border-t-transparent rounded-full mx-auto mb-2" />
+            <div class="text-sm text-gray-400">AI 正在分析...</div>
           </div>
-
-          <!-- Empty state -->
-          <div v-else-if="!lsResponse && !lsError" class="flex items-center justify-center h-full">
-            <div class="text-center text-gray-400">
-              <div class="text-3xl mb-2">📚</div>
-              <div class="text-sm">选择一个功能开始</div>
-              <div class="text-xs mt-1">AI 分析结果将在此处显示</div>
-            </div>
-          </div>
-
-          <!-- AI response -->
-          <MarkdownRenderer v-else :source="lsResponse" subject="法学" />
         </div>
+
+        <!-- Empty state -->
+        <div v-else-if="!lsResponse && !lsError" class="flex items-center justify-center h-64">
+          <div class="text-center text-gray-400">
+            <div class="text-3xl mb-2">📚</div>
+            <div class="text-sm">在左侧选择一个 AI 功能开始</div>
+            <div class="text-xs mt-1">分析结果将在此处显示</div>
+          </div>
+        </div>
+
+        <!-- AI response -->
+        <MarkdownRenderer v-else :source="lsResponse" subject="法学" />
       </div>
     </template>
   </SubjectLayout>
@@ -271,6 +257,8 @@ import { ref, reactive } from 'vue'
 import SubjectLayout from '../components/SubjectLayout.vue'
 import { coldCallPrep, examForecast, legalWritingFeedback, generateFlashcards } from '../services/LawStudentService.js'
 import MarkdownRenderer from '../components/MarkdownRenderer.vue'
+
+const layoutRef = ref(null)
 
 const modes = [
   { key: 'cloze', label: '自动挖空', icon: '✎' },
@@ -414,6 +402,9 @@ async function runSkill(skillKey) {
   lsLoading.value = true
   lsError.value = ''
   lsResponse.value = ''
+
+  // Auto-switch right panel to AI tutor tab
+  layoutRef.value?.switchToAiTab()
 
   let result
   try {
