@@ -126,21 +126,6 @@ body {
   font-weight: 500;
   letter-spacing: 0.02em;
 }
-.titlebar-controls {
-  display: flex; align-items: center; gap: 2px;
-  -webkit-app-region: no-drag;
-}
-.titlebar-btn {
-  width: 36px; height: 28px;
-  border: none; background: transparent;
-  color: rgba(255,255,255,0.7);
-  font-size: 14px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 4px; transition: background 0.15s;
-}
-.titlebar-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
-.titlebar-btn.close:hover { background: #E81123; color: #fff; }
-
 /* ===== App Shell ===== */
 .app-shell {
   display: flex;

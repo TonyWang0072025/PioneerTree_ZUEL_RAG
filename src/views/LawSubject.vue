@@ -261,11 +261,11 @@ import MarkdownRenderer from '../components/MarkdownRenderer.vue'
 const layoutRef = ref(null)
 
 const modes = [
+  { key: 'lawstudent', label: 'Law-Student！', icon: '⚡' },
   { key: 'cloze', label: '自动挖空', icon: '✎' },
-  { key: 'align', label: '背书对齐', icon: '✓' },
-  { key: 'lawstudent', label: 'Law-Student！', icon: '⚡' }
+  { key: 'align', label: '背书对齐', icon: '✓' }
 ]
-const currentMode = ref('cloze')
+const currentMode = ref('lawstudent')
 
 // ---- Auto-Cloze ----
 const clozeSource = ref('')

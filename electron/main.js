@@ -56,9 +56,13 @@ app.on('quit', () => {
 
 // Database: full-text search
 ipcMain.handle('search-documents', async (_event, query, subject) => {
+  console.log('[Search] 收到关键词:', query, '学科:', subject)
   try {
-    return { success: true, data: db.searchDocuments(query, subject) }
+    const data = db.searchDocuments(query, subject)
+    console.log('[Search] 找到结果数量:', data.length)
+    return { success: true, data }
   } catch (err) {
+    console.error('[Search] 搜索出错:', err.message, err.stack)
     return { success: false, error: err.message }
   }
 })

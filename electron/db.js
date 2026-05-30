@@ -118,22 +118,38 @@ function initDatabase() {
 function searchDocuments(query, subject = null) {
   if (!db) throw new Error('Database not initialized')
 
+  if (!query || !query.trim()) return []
+
+  // Check if idx database was attached successfully
+  let idxAttached = false
+  try {
+    db.prepare('SELECT 1 FROM idx.documents LIMIT 1').get()
+    idxAttached = true
+  } catch (_) {
+    console.warn('[DB] idx.documents not available — index.db may not exist. Run npm run prepare-data first.')
+  }
+  if (!idxAttached) return []
+
+  // FTS5 in ATTACHed DB: MATCH and snippet() require bare table name (no schema prefix, no alias)
   let sql = `
     SELECT d.id, d.path, d.subject, d.filename,
-           snippet(idx.documents_fts, 1, '<mark>', '</mark>', '...', 32) AS snippet
-    FROM idx.documents_fts fts
-    JOIN idx.documents d ON fts.rowid = d.id
-    WHERE idx.documents_fts MATCH ?
+           snippet(documents_fts, -1, '<mark>', '</mark>', '...', 64) AS snippet
+    FROM idx.documents_fts
+    JOIN idx.documents AS d ON idx.documents_fts.rowid = d.id
+    WHERE documents_fts MATCH ?
   `
   const params = [query]
 
-  if (subject) {
+  if (subject && subject !== '全部学科' && subject !== 'null') {
     sql += ' AND d.subject = ?'
     params.push(subject)
   }
 
   sql += ' ORDER BY rank LIMIT 50'
-  return db.prepare(sql).all(...params)
+  console.log('[DB] searchDocuments query:', query, 'subject:', subject)
+  const results = db.prepare(sql).all(...params)
+  console.log('[DB] searchDocuments results:', results.length)
+  return results
 }
 
 /**

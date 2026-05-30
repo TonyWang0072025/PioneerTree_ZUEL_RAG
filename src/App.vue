@@ -6,11 +6,6 @@
         <div class="titlebar-logo">树</div>
         <span class="titlebar-title">前人树 — AI 辅助学习</span>
       </div>
-      <div class="titlebar-controls">
-        <button class="titlebar-btn" title="最小化">&#x2014;</button>
-        <button class="titlebar-btn" title="最大化">&#9633;</button>
-        <button class="titlebar-btn close" title="关闭">&#10005;</button>
-      </div>
     </div>
 
     <!-- App shell: sidebar + main -->
