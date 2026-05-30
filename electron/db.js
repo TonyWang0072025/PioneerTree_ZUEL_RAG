@@ -60,7 +60,9 @@ function initDatabase() {
   `)
 
   // Attach pre-built index databases from resources
-  const resourcesPath = process.resourcesPath || path.join(__dirname, '..', 'resources')
+  const resourcesPath = app.isPackaged
+    ? process.resourcesPath
+    : path.join(__dirname, '..', 'resources')
   const indexDbPath = path.join(resourcesPath, 'dist-data', 'index.db')
   const vectorDbPath = path.join(resourcesPath, 'dist-data', 'vector_index.db')
 

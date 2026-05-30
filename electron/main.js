@@ -204,7 +204,9 @@ ipcMain.handle('call-deepseek', async (_event, messages) => {
 // Database: read raw document file (for PDF/DOCX preview)
 ipcMain.handle('get-document-file', async (_event, docPath) => {
   try {
-    const resourcesPath = process.resourcesPath || path.join(__dirname, '..', 'resources')
+    const resourcesPath = app.isPackaged
+      ? process.resourcesPath
+      : path.join(__dirname, '..', 'resources')
     const fullPath = path.join(resourcesPath, 'documents', docPath)
     const fs = require('fs')
     if (!fs.existsSync(fullPath)) {
