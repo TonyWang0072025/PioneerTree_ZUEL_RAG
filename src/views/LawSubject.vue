@@ -1,93 +1,153 @@
 <template>
-  <SubjectLayout subject="法学" theme-color="#012d6a">
-    <div class="space-y-6">
+  <SubjectLayout subject="法学" theme-color="#1B4965">
+    <div class="law-content">
+      <!-- Page header -->
+      <div class="page-header">
+        <h1 class="page-title">法学学习</h1>
+        <p class="page-desc">用 AI 辅助背诵法条 — 自动挖空关键词，强化记忆</p>
+      </div>
+
       <!-- Mode Switcher -->
-      <div class="flex gap-2">
+      <div class="mode-switcher">
         <button
           v-for="m in modes" :key="m.key"
           @click="currentMode = m.key"
-          class="px-4 py-1.5 text-sm rounded-full border transition-colors"
-          :class="currentMode === m.key
-            ? 'text-white border-transparent'
-            : 'text-gray-500 border-gray-300 hover:border-gray-400'"
-          :style="currentMode === m.key ? { backgroundColor: '#012d6a' } : {}"
-        >{{ m.label }}</button>
+          class="mode-btn"
+          :class="{ active: currentMode === m.key }"
+        >
+          <span class="mode-icon">{{ m.icon }}</span>
+          {{ m.label }}
+        </button>
       </div>
 
       <!-- Modes: Cloze + Align -->
       <div v-if="currentMode !== 'lawstudent'">
         <!-- Mode 1: Auto-Cloze -->
         <div v-if="currentMode === 'cloze'">
-          <h3 class="text-lg font-bold text-gray-800 mb-3">自动挖空练习</h3>
-          <div class="bg-gray-50 rounded-lg p-4 mb-4 text-sm text-gray-500">
-            提示：将法条中的关键词用 <code class="bg-gray-200 px-1 rounded">**关键词**</code> 包裹，系统自动生成填空。
+          <div class="card">
+            <div class="card-header">
+              <div class="icon blue">📝</div>
+              <div>
+                <div class="card-title">输入法条文本</div>
+                <div class="card-subtitle">标记关键词，系统自动生成填空</div>
+              </div>
+            </div>
+
+            <div class="tip-box">
+              <span class="tip-icon">💡</span>
+              <span>将法条中的关键词用 <code>**关键词**</code> 包裹，系统自动生成挖空练习。</span>
+            </div>
+
+            <div class="textarea-wrap">
+              <textarea
+                v-model="clozeSource"
+                placeholder="在此输入法条文本，使用 **关键词** 标记需要挖空的内容..."
+              />
+              <span class="char-count">{{ clozeSource.length }} 字</span>
+            </div>
+
+            <button
+              @click="generateCloze"
+              class="btn btn-primary"
+            >生成挖空</button>
           </div>
 
-          <textarea
-            v-model="clozeSource"
-            class="w-full h-40 text-sm font-mono p-3 border border-gray-200 rounded focus:outline-none focus:border-[#012d6a] mb-4"
-            placeholder="在此输入法条文本，使用 **关键词** 标记需要挖空的内容..."
-          />
+          <!-- Cloze result -->
+          <div v-if="clozeItems.length > 0" class="card">
+            <div class="card-header">
+              <div class="icon green">✓</div>
+              <div>
+                <div class="card-title">挖空练习</div>
+                <div class="card-subtitle">输入答案后自动比对</div>
+              </div>
+            </div>
 
-          <button
-            @click="generateCloze"
-            class="px-4 py-1.5 text-sm font-medium text-white rounded mb-6"
-            style="background-color: #012d6a"
-          >生成挖空</button>
-
-          <div v-if="clozeItems.length > 0" class="space-y-4">
             <div
               v-for="(item, idx) in clozeItems"
               :key="idx"
-              class="bg-white border border-gray-200 rounded-lg p-4"
+              class="result-text mb-3"
             >
-              <div class="text-sm text-gray-800 leading-loose">
-                <template v-for="(seg, si) in item.segments" :key="si">
-                  <span v-if="seg.type === 'text'">{{ seg.value }}</span>
-                  <input
-                    v-else
-                    v-model="seg.userAnswer"
-                    @input="checkClozeItem(idx)"
-                    type="text"
-                    class="inline px-2 py-0.5 border-b-2 rounded text-sm font-medium outline-none"
-                    :class="seg.correct === true ? 'border-green-500 bg-green-50 text-green-800' : seg.correct === false ? 'border-red-400 bg-red-50 text-red-800' : 'border-gray-300 bg-yellow-50'"
-                    :style="{ width: Math.max(seg.answer.length * 1.2 + 2, 4) + 'em' }"
-                    :placeholder="'________'"
-                  />
-                </template>
-              </div>
+              <template v-for="(seg, si) in item.segments" :key="si">
+                <span v-if="seg.type === 'text'">{{ seg.value }}</span>
+                <input
+                  v-else
+                  v-model="seg.userAnswer"
+                  @input="checkClozeItem(idx)"
+                  type="text"
+                  class="inline px-2 py-0.5 border-b-2 rounded text-sm font-medium outline-none"
+                  :class="seg.correct === true ? 'border-green-500 bg-green-50 text-green-800' : seg.correct === false ? 'border-red-400 bg-red-50 text-red-800' : 'border-gray-300 bg-yellow-50'"
+                  :style="{ width: Math.max(seg.answer.length * 1.2 + 2, 4) + 'em' }"
+                  :placeholder="'________'"
+                />
+              </template>
               <div class="mt-2 text-xs text-gray-400">
                 {{ item.answered }} / {{ item.total }} 已填 · 正确 {{ item.correct }}/{{ item.total }}
               </div>
+            </div>
+          </div>
+
+          <!-- Sample -->
+          <div class="card">
+            <div class="card-header">
+              <div class="icon orange">📖</div>
+              <div>
+                <div class="card-title">示例</div>
+                <div class="card-subtitle">参考格式，快速开始</div>
+              </div>
+            </div>
+            <div class="example-box">
+              <span class="label">民法典 · 第一条</span><br>
+              为了保护<span class="keyword">民事主体</span>的合法权益，调整<span class="keyword">民事关系</span>，维护社会和经济秩序，适应中国特色社会主义发展要求，弘扬社会主义核心价值观，根据宪法，制定本法。
             </div>
           </div>
         </div>
 
         <!-- Mode 2: Recitation Alignment -->
         <div v-if="currentMode === 'align'">
-          <h3 class="text-lg font-bold text-gray-800 mb-3">背书对齐</h3>
-          <div class="flex gap-4">
-            <div class="flex-1">
-              <div class="text-xs text-gray-400 mb-1">原文</div>
-              <textarea
-                v-model="alignSource"
-                class="w-full h-64 text-sm p-3 border border-gray-200 rounded font-mono focus:outline-none"
-                placeholder="法条原文..."
-              />
+          <div class="card">
+            <div class="card-header">
+              <div class="icon blue">📋</div>
+              <div>
+                <div class="card-title">背书对齐</div>
+                <div class="card-subtitle">逐句默写，核对与原文的偏差</div>
+              </div>
             </div>
-            <div class="flex-1">
-              <div class="text-xs text-gray-400 mb-1">你的背诵</div>
-              <textarea
-                v-model="alignUser"
-                @input="compareAlign"
-                class="w-full h-64 text-sm p-3 border border-gray-200 rounded font-mono focus:outline-none"
-                placeholder="在此默写..."
-              />
+
+            <div class="tip-box">
+              <span class="tip-icon">💡</span>
+              <span>左侧粘贴法条原文，右侧逐句默写。系统自动逐句比对。</span>
+            </div>
+
+            <div class="flex gap-4 mb-4">
+              <div class="flex-1">
+                <div class="text-xs text-gray-400 mb-1">原文</div>
+                <textarea
+                  v-model="alignSource"
+                  class="w-full h-64 text-sm p-3 border border-gray-200 rounded font-mono focus:outline-none focus:border-[#1B4965]"
+                  placeholder="法条原文..."
+                />
+              </div>
+              <div class="flex-1">
+                <div class="text-xs text-gray-400 mb-1">你的背诵</div>
+                <textarea
+                  v-model="alignUser"
+                  @input="compareAlign"
+                  class="w-full h-64 text-sm p-3 border border-gray-200 rounded font-mono focus:outline-none focus:border-[#1B4965]"
+                  placeholder="在此默写..."
+                />
+              </div>
             </div>
           </div>
 
-          <div v-if="alignResult.length > 0" class="mt-4 p-4 bg-white border border-gray-200 rounded">
-            <div class="text-xs text-gray-400 mb-2">逐句对比结果</div>
+          <!-- Align result -->
+          <div v-if="alignResult.length > 0" class="card">
+            <div class="card-header">
+              <div class="icon green">✓</div>
+              <div>
+                <div class="card-title">逐句对比结果</div>
+                <div class="card-subtitle">绿色匹配，红色差异</div>
+              </div>
+            </div>
             <div v-for="(line, i) in alignResult" :key="i" class="flex items-start gap-2 py-1 text-sm font-mono">
               <span class="shrink-0 w-5 text-xs text-gray-400">{{ i + 1 }}</span>
               <span :class="line.match ? 'text-green-700 bg-green-50' : 'text-red-600 bg-red-50'" class="flex-1 px-2 py-0.5 rounded">
@@ -97,82 +157,78 @@
             </div>
           </div>
         </div>
-
-        <!-- Sample content for demo -->
-        <div class="mt-4 p-3 bg-blue-50 rounded text-xs text-gray-600">
-          <strong>示例内容：</strong>《民法典》第一条 为了保护<strong>**民事主体**</strong>的合法权益，调整<strong>**民事关系**</strong>，维护社会和经济秩序，适应中国特色社会主义发展要求，弘扬社会主义核心价值观，根据宪法，制定本法。
-        </div>
       </div>
 
       <!-- Mode 3: Law-Student! -->
-      <div v-else class="space-y-4">
+      <div v-else class="law-student-panel">
         <!-- Search bar -->
-        <div class="flex gap-2">
-          <input
-            v-model="lsSearchQuery"
-            @keydown.enter="doLawSearch"
-            type="text"
-            class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-[#012d6a]"
-            placeholder="搜索本地法学文献作为上下文..."
-          />
+        <div class="flex gap-2 mb-4">
+          <div class="search-box" style="max-width:100%">
+            <span class="search-icon">🔍</span>
+            <input
+              v-model="lsSearchQuery"
+              @keydown.enter="doLawSearch"
+              type="text"
+              placeholder="搜索本地法学文献作为上下文..."
+            />
+          </div>
           <button
             @click="doLawSearch"
             :disabled="lsSearching"
-            class="px-4 py-2 text-sm font-medium text-white rounded"
-            style="background-color: #012d6a"
+            class="btn btn-primary shrink-0"
           >{{ lsSearching ? '搜索中...' : '搜索' }}</button>
         </div>
 
         <!-- Search results -->
-        <div v-if="lsSearchResults.length > 0" class="border border-gray-200 rounded divide-y max-h-48 overflow-y-auto">
+        <div v-if="lsSearchResults.length > 0" class="card" style="padding:0; overflow:hidden">
           <div
             v-for="doc in lsSearchResults" :key="doc.id || doc.doc_id"
             @click="loadDocument(doc)"
-            class="px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 transition-colors"
+            class="px-4 py-3 text-sm cursor-pointer hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-b-0"
           >
             <div class="font-medium text-gray-800 truncate">{{ doc.title || doc.file_name || '未命名文档' }}</div>
             <div class="text-xs text-gray-400 mt-0.5 line-clamp-2" v-html="doc.snippet || doc.content?.slice(0, 120)"></div>
           </div>
         </div>
 
-        <!-- Context text area (editable) -->
-        <div>
-          <div class="text-xs text-gray-400 mb-1">
-            上下文内容（可直接粘贴或编辑）—
-            <span :class="lsContextText.trim() ? 'text-green-600' : 'text-gray-400'">
+        <!-- Context text area -->
+        <div class="mb-4">
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-xs text-gray-400">上下文内容（可直接粘贴或编辑）</span>
+            <span class="text-xs" :class="lsContextText.trim() ? 'text-green-600' : 'text-gray-400'">
               {{ lsContextText.trim() ? '已加载 ' + lsContextText.length + ' 字' : '待输入' }}
             </span>
           </div>
-          <textarea
-            v-model="lsContextText"
-            class="w-full h-44 text-sm font-mono p-3 border border-gray-200 rounded focus:outline-none focus:border-[#012d6a]"
-            placeholder="在此粘贴或编辑法条/案例文本，作为 AI 功能的上下文..."
-          />
+          <div class="textarea-wrap">
+            <textarea
+              v-model="lsContextText"
+              placeholder="在此粘贴或编辑法条/案例文本，作为 AI 功能的上下文..."
+              style="min-height: 180px"
+            />
+          </div>
         </div>
 
         <!-- 4 Function Cards -->
-        <div class="grid grid-cols-2 gap-3">
+        <div class="skill-grid">
           <button
             v-for="sk in lawSkills" :key="sk.key"
             @click="runSkill(sk.key)"
             :disabled="lsLoading"
-            class="text-left p-4 rounded-lg border-2 transition-all hover:shadow-md"
-            :class="lsLoading && lsActiveSkill === sk.key
-              ? 'border-[#012d6a] bg-blue-50 opacity-70'
-              : 'border-gray-200 hover:border-[#012d6a] bg-white'"
+            class="skill-card"
+            :class="{ loading: lsLoading && lsActiveSkill === sk.key }"
           >
             <div class="flex items-center gap-2 mb-1">
-              <span class="text-lg">{{ sk.icon }}</span>
-              <span class="text-sm font-bold" style="color: #012d6a">{{ sk.title }}</span>
+              <span class="skill-icon">{{ sk.icon }}</span>
+              <span class="skill-title">{{ sk.title }}</span>
               <span v-if="lsLoading && lsActiveSkill === sk.key" class="ml-auto text-xs text-blue-500 animate-pulse">处理中...</span>
             </div>
-            <div class="text-xs text-gray-500">{{ sk.desc }}</div>
-            <div class="text-xs text-gray-400 mt-0.5">{{ sk.desc2 }}</div>
+            <div class="skill-desc">{{ sk.desc }}</div>
+            <div class="skill-desc2">{{ sk.desc2 }}</div>
           </button>
         </div>
 
         <!-- Error message -->
-        <div v-if="lsError" class="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+        <div v-if="lsError" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
           {{ lsError }}
         </div>
       </div>
@@ -181,14 +237,14 @@
     <!-- Override right panel for law-student mode: AI response -->
     <template v-if="currentMode === 'lawstudent'" #notebook>
       <div class="flex flex-col h-full">
-        <div class="px-4 py-3 border-b border-gray-200 bg-white">
-          <h3 class="text-sm font-semibold" style="color: #012d6a">AI 法学导师</h3>
+        <div class="notes-header">
+          <div class="notes-title"><span class="dot"></span>AI 法学导师</div>
         </div>
         <div class="flex-1 overflow-y-auto p-4">
-          <!-- Loading placeholder -->
+          <!-- Loading -->
           <div v-if="lsLoading" class="flex items-center justify-center h-full">
             <div class="text-center">
-              <div class="animate-spin w-8 h-8 border-2 border-[#012d6a] border-t-transparent rounded-full mx-auto mb-2" />
+              <div class="animate-spin w-8 h-8 border-2 border-[#1B4965] border-t-transparent rounded-full mx-auto mb-2" />
               <div class="text-sm text-gray-400">AI 正在分析...</div>
             </div>
           </div>
@@ -217,9 +273,9 @@ import { coldCallPrep, examForecast, legalWritingFeedback, generateFlashcards } 
 import MarkdownRenderer from '../components/MarkdownRenderer.vue'
 
 const modes = [
-  { key: 'cloze', label: '自动挖空' },
-  { key: 'align', label: '背书对齐' },
-  { key: 'lawstudent', label: 'Law-Student！' }
+  { key: 'cloze', label: '自动挖空', icon: '✎' },
+  { key: 'align', label: '背书对齐', icon: '✓' },
+  { key: 'lawstudent', label: 'Law-Student！', icon: '⚡' }
 ]
 const currentMode = ref('cloze')
 

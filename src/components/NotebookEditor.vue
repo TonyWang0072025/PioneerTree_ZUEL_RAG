@@ -1,38 +1,35 @@
 <template>
   <div class="flex flex-col h-full">
-    <!-- Toolbar: title + save + notes toggle -->
-    <div class="flex items-center gap-2 px-3 py-2 border-b border-gray-200 bg-white">
-      <button
-        @click="showDrawer = !showDrawer"
-        class="shrink-0 w-7 h-7 flex items-center justify-center text-gray-500 hover:text-gray-700 rounded hover:bg-gray-100 text-xs"
-        title="笔记列表"
-      >
-        &#9776;
-      </button>
-      <input
-        v-model="noteTitle"
-        type="text"
-        placeholder="笔记标题..."
-        class="flex-1 text-sm px-2 py-1 border border-gray-200 rounded focus:outline-none focus:border-[#0068ef]"
-      />
-      <button
-        @click="handleSave"
-        :disabled="saving"
-        class="shrink-0 px-3 py-1 text-xs font-medium text-white rounded transition-colors"
-        style="background-color: #0068ef"
-      >
-        {{ saving ? '...' : '保存' }}
-      </button>
-      <button
-        @click="handleExport"
-        class="shrink-0 px-2 py-1 text-xs text-gray-500 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
-        title="导出 .md 文件"
-      >导出</button>
+    <!-- Notes header: title + actions -->
+    <div class="notes-header">
+      <div class="notes-title"><span class="dot"></span>边搜边记</div>
+      <div class="notes-actions">
+        <button
+          @click="showDrawer = !showDrawer"
+          class="notes-btn" title="笔记列表"
+        >☰</button>
+        <button
+          @click="handleSave"
+          :disabled="saving"
+          class="notes-btn save"
+        >{{ saving ? '...' : '保存' }}</button>
+        <button
+          @click="handleExport"
+          class="notes-btn"
+          title="导出 .md 文件"
+        >导出</button>
+      </div>
     </div>
+    <input
+      v-model="noteTitle"
+      class="note-title-input"
+      type="text"
+      placeholder="笔记标题..."
+    />
 
     <!-- Editor area -->
     <div class="flex-1 overflow-hidden relative">
-      <div ref="vditorRef" class="h-full" />
+      <div ref="vditorRef" class="h-full note-editor-body" style="padding:0" />
 
       <!-- Notes list drawer overlay -->
       <Transition name="drawer">
@@ -41,7 +38,7 @@
           <div class="w-56 bg-white border-l border-gray-200 flex flex-col shadow-lg">
             <div class="px-3 py-2 border-b border-gray-100 text-xs font-semibold text-gray-500 flex justify-between">
               历史笔记
-              <button @click="refreshNotes" class="text-[#0068ef] hover:underline">刷新</button>
+              <button @click="refreshNotes" class="notes-btn" style="padding:2px 8px; font-size:0.7rem">刷新</button>
             </div>
             <div class="flex-1 overflow-y-auto">
               <div v-if="notes.length === 0" class="p-3 text-xs text-gray-400">暂无笔记</div>

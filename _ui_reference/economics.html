@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>前人树 · 经管</title>
+  <style>
+    :root {
+      --bg: #F5F2ED;
+      --surface: #FFFFFF;
+      --surface-alt: #FAF8F5;
+      --fg: #1A1A1A;
+      --fg-secondary: #5C5C5C;
+      --fg-muted: #9B9B9B;
+      --border: #E2DED8;
+      --border-light: #EDEAE5;
+      --accent-primary: #1B4965;
+      --accent-primary-hover: #143A50;
+      --accent-secondary: #E07A5F;
+      --accent-secondary-hover: #C96A52;
+      --accent-tertiary: #81B29A;
+      --titlebar-bg: #1B4965;
+      --sidebar-bg: #FFFFFF;
+      --sidebar-width: 220px;
+      --notes-width: 320px;
+      --titlebar-height: 38px;
+      --statusbar-height: 28px;
+      --success: #4CAF50;
+      --success-bg: #EDF7EE;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-focus: 0 0 0 3px rgba(27,73,101,0.15);
+      --font-display: '华文宋体', 'STSong', 'Noto Serif SC', Georgia, serif;
+      --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; font-size: 15px; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--fg); display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+
+    .titlebar { height: var(--titlebar-height); background: var(--titlebar-bg); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; -webkit-app-region: drag; flex-shrink: 0; user-select: none; }
+    .titlebar-left { display: flex; align-items: center; gap: 10px; }
+    .titlebar-logo { width: 22px; height: 22px; background: rgba(255,255,255,0.18); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; font-family: var(--font-display); }
+    .titlebar-title { font-size: 0.8rem; color: rgba(255,255,255,0.85); font-weight: 500; }
+    .titlebar-controls { display: flex; align-items: center; gap: 2px; -webkit-app-region: no-drag; }
+    .titlebar-btn { width: 36px; height: 28px; border: none; background: transparent; color: rgba(255,255,255,0.7); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+    .titlebar-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .titlebar-btn.close:hover { background: #E81123; }
+
+    .app-shell { display: flex; flex: 1; overflow: hidden; }
+
+    .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; padding: 12px 0; }
+    .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 8px 18px 20px; text-decoration: none; color: var(--fg); }
+    .sidebar-brand-icon { width: 32px; height: 32px; background: var(--accent-primary); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; font-weight: 700; font-family: var(--font-display); }
+    .sidebar-brand-text { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--accent-primary); }
+    .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 0 10px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-md); text-decoration: none; color: var(--fg-secondary); font-size: 0.9rem; font-weight: 500; transition: var(--transition); cursor: pointer; }
+    .nav-item:hover { background: var(--surface-alt); color: var(--fg); }
+    .nav-item.active { background: rgba(27,73,101,0.08); color: var(--accent-primary); font-weight: 600; }
+    .nav-icon { width: 20px; text-align: center; font-size: 16px; flex-shrink: 0; }
+    .nav-divider { height: 1px; background: var(--border-light); margin: 8px 12px; }
+    .sidebar-footer { padding: 12px 18px; border-top: 1px solid var(--border-light); display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary)); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+    .sidebar-user-info { flex: 1; min-width: 0; }
+    .sidebar-user-name { font-size: 0.82rem; font-weight: 600; color: var(--fg); }
+    .sidebar-user-role { font-size: 0.72rem; color: var(--fg-muted); }
+
+    .main-content { flex: 1; overflow-y: auto; padding: 28px 36px; min-width: 0; }
+
+    .notes-panel { width: var(--notes-width); background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+    .notes-header { padding: 14px 18px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; }
+    .notes-title { font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 7px; }
+    .notes-title .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-tertiary); }
+    .notes-actions { display: flex; gap: 5px; }
+    .notes-btn { padding: 5px 10px; border-radius: var(--radius-sm); font-size: 0.78rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--fg-secondary); transition: var(--transition); }
+    .notes-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+    .notes-btn.save { background: var(--accent-primary); color: #fff; border-color: var(--accent-primary); }
+    .notes-btn.save:hover { background: var(--accent-primary-hover); }
+    .note-title-input { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem; font-family: var(--font-body); transition: var(--transition); margin: 10px 18px; width: calc(100% - 36px); }
+    .note-title-input:focus { outline: none; border-color: var(--accent-primary); box-shadow: var(--shadow-focus); }
+    .note-toolbar { display: flex; align-items: center; gap: 2px; padding: 6px 18px; border-bottom: 1px solid var(--border-light); }
+    .toolbar-btn { width: 30px; height: 30px; border: none; background: transparent; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--fg-secondary); font-size: 13px; transition: var(--transition); }
+    .toolbar-btn:hover { background: var(--surface-alt); color: var(--fg); }
+    .toolbar-divider { width: 1px; height: 18px; background: var(--border-light); margin: 0 5px; }
+    .note-editor { flex: 1; padding: 14px 18px; overflow-y: auto; }
+    .note-editor textarea { width: 100%; height: 100%; min-height: 250px; border: none; background: transparent; font-family: var(--font-body); font-size: 0.88rem; line-height: 1.8; color: var(--fg); resize: none; }
+    .note-editor textarea::placeholder { color: var(--fg-muted); }
+    .note-editor textarea:focus { outline: none; }
+    .quick-notes { padding: 12px 18px; border-top: 1px solid var(--border-light); }
+    .quick-notes-label { font-size: 0.72rem; color: var(--fg-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+    .quick-note-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 99px; font-size: 0.76rem; border: 1px solid var(--border-light); background: var(--surface-alt); color: var(--fg-secondary); cursor: pointer; transition: var(--transition); margin: 2px 3px 2px 0; }
+    .quick-note-chip:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+
+    .statusbar { height: var(--statusbar-height); background: var(--surface); border-top: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; font-size: 0.72rem; color: var(--fg-muted); gap: 16px; flex-shrink: 0; }
+    .statusbar-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-tertiary); }
+
+    .page-header { margin-bottom: 22px; }
+    .page-title { font-family: var(--font-display); font-size: 1.45rem; font-weight: 700; color: var(--accent-primary); }
+    .page-desc { font-size: 0.88rem; color: var(--fg-muted); margin-top: 3px; }
+
+    .stats-row { display: flex; gap: 12px; margin-bottom: 24px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px 18px; flex: 1; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 12px; }
+    .stat-icon { width: 38px; height: 38px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .stat-icon.blue { background: rgba(27,73,101,0.08); }
+    .stat-icon.green { background: rgba(129,178,154,0.12); }
+    .stat-icon.orange { background: rgba(224,122,95,0.1); }
+    .stat-number { font-size: 1.4rem; font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; }
+    .stat-label { font-size: 0.78rem; color: var(--fg-muted); }
+
+    .exercise-card { background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: 16px; overflow: hidden; transition: var(--transition); }
+    .exercise-card:hover { box-shadow: var(--shadow-md); }
+    .exercise-header { padding: 20px 24px 14px; display: flex; align-items: flex-start; gap: 12px; }
+    .exercise-number { width: 34px; height: 34px; border-radius: 50%; background: var(--accent-secondary); color: #fff; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+    .exercise-info { flex: 1; }
+    .exercise-title { font-family: var(--font-display); font-size: 1.02rem; font-weight: 700; color: var(--fg); margin-bottom: 3px; }
+    .exercise-subject { font-size: 0.75rem; font-weight: 500; color: var(--accent-primary); background: rgba(27,73,101,0.06); padding: 2px 7px; border-radius: 4px; display: inline-block; margin-bottom: 5px; }
+    .exercise-desc { font-size: 0.88rem; color: var(--fg-secondary); line-height: 1.7; }
+    .exercise-body { padding: 0 24px 18px; }
+    .exercise-textarea { width: 100%; min-height: 90px; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 0.88rem; line-height: 1.7; color: var(--fg); resize: vertical; transition: var(--transition); }
+    .exercise-textarea::placeholder { color: var(--fg-muted); }
+    .exercise-textarea:focus { outline: none; border-color: var(--accent-primary); box-shadow: var(--shadow-focus); }
+    .exercise-footer { padding: 0 24px 18px; display: flex; align-items: center; gap: 10px; }
+
+    .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 20px; border-radius: var(--radius-md); font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: var(--transition); border: none; font-family: var(--font-body); }
+    .btn-primary { background: var(--accent-secondary); color: #fff; }
+    .btn-primary:hover { background: var(--accent-secondary-hover); box-shadow: 0 2px 8px rgba(224,122,95,0.3); transform: translateY(-1px); }
+
+    .exercise-result { margin: 0 24px 18px; padding: 14px 18px; border-radius: var(--radius-md); font-size: 0.88rem; line-height: 1.7; display: none; }
+    .exercise-result.show { display: block; }
+    .exercise-result.partial { background: #FFF8E1; border: 1px solid rgba(244,162,97,0.2); color: #E65100; }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .exercise-card { animation: fadeInUp 0.35s ease-out both; }
+    .exercise-card:nth-child(2) { animation-delay: 0.08s; }
+    .exercise-card:nth-child(3) { animation-delay: 0.16s; }
+    .stat-card { animation: fadeInUp 0.3s ease-out both; }
+    .stat-card:nth-child(2) { animation-delay: 0.05s; }
+    .stat-card:nth-child(3) { animation-delay: 0.1s; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
+  </style>
+</head>
+<body>
+  <div class="titlebar">
+    <div class="titlebar-left">
+      <div class="titlebar-logo">树</div>
+      <span class="titlebar-title">前人树 · 经管</span>
+    </div>
+    <div class="titlebar-controls">
+      <button class="titlebar-btn">&#x2014;</button>
+      <button class="titlebar-btn">&#9633;</button>
+      <button class="titlebar-btn close">&#10005;</button>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <nav class="sidebar">
+      <a class="sidebar-brand" href="index.html">
+        <div class="sidebar-brand-icon">树</div>
+        <span class="sidebar-brand-text">前人树</span>
+      </a>
+      <div class="sidebar-nav">
+        <a class="nav-item" href="index.html"><span class="nav-icon">🏠</span> 首页</a>
+        <a class="nav-item" href="law.html"><span class="nav-icon">⚖</span> 法学</a>
+        <a class="nav-item" href="math.html"><span class="nav-icon">∑</span> 数学</a>
+        <a class="nav-item active" href="economics.html"><span class="nav-icon">📊</span> 经管</a>
+        <a class="nav-item" href="docs.html"><span class="nav-icon">📁</span> 文档库</a>
+        <div class="nav-divider"></div>
+        <a class="nav-item" href="settings.html"><span class="nav-icon">⚙</span> 设置</a>
+      </div>
+      <div class="sidebar-footer">
+        <div class="avatar">ZJ</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">周杰</div>
+          <div class="sidebar-user-role">学习中</div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <div class="page-header">
+        <h1 class="page-title">踩点核对练习</h1>
+        <p class="page-desc">AI 根据知识点生成问题，你来作答后核对关键踩分点</p>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-icon blue">📝</div><div><div class="stat-number">3</div><div class="stat-label">待完成题目</div></div></div>
+        <div class="stat-card"><div class="stat-icon green">✓</div><div><div class="stat-number">0</div><div class="stat-label">已核对</div></div></div>
+        <div class="stat-card"><div class="stat-icon orange">⭐</div><div><div class="stat-number">—</div><div class="stat-label">得分率</div></div></div>
+      </div>
+
+      <div class="exercise-card">
+        <div class="exercise-header">
+          <div class="exercise-number">1</div>
+          <div class="exercise-info">
+            <span class="exercise-subject">微观经济学</span>
+            <div class="exercise-title">供需平衡</div>
+            <div class="exercise-desc">请阐述需求定律的含义，并解释价格变动如何影响需求量。</div>
+          </div>
+        </div>
+        <div class="exercise-body"><textarea class="exercise-textarea" placeholder="在此输入你的答案，尽可能覆盖关键概念..."></textarea></div>
+        <div class="exercise-result" id="result-1"></div>
+        <div class="exercise-footer"><button class="btn btn-primary" onclick="submitAnswer(1)">提交核对</button></div>
+      </div>
+
+      <div class="exercise-card">
+        <div class="exercise-header">
+          <div class="exercise-number">2</div>
+          <div class="exercise-info">
+            <span class="exercise-subject">管理学</span>
+            <div class="exercise-title">马斯洛需求层次</div>
+            <div class="exercise-desc">请默写马斯洛需求层次理论的五个层次，并简要说明各层次的含义。</div>
+          </div>
+        </div>
+        <div class="exercise-body"><textarea class="exercise-textarea" placeholder="在此输入你的答案，尽可能覆盖关键概念..."></textarea></div>
+        <div class="exercise-result" id="result-2"></div>
+        <div class="exercise-footer"><button class="btn btn-primary" onclick="submitAnswer(2)">提交核对</button></div>
+      </div>
+
+      <div class="exercise-card">
+        <div class="exercise-header">
+          <div class="exercise-number">3</div>
+          <div class="exercise-info">
+            <span class="exercise-subject">宏观经济学</span>
+            <div class="exercise-title">GDP 核算</div>
+            <div class="exercise-desc">请列出国内生产总值（GDP）的三种核算方法，并简述每种方法的核心思想。</div>
+          </div>
+        </div>
+        <div class="exercise-body"><textarea class="exercise-textarea" placeholder="在此输入你的答案，尽可能覆盖关键概念..."></textarea></div>
+        <div class="exercise-result" id="result-3"></div>
+        <div class="exercise-footer"><button class="btn btn-primary" onclick="submitAnswer(3)">提交核对</button></div>
+      </div>
+    </div>
+
+    <aside class="notes-panel">
+      <div class="notes-header">
+        <div class="notes-title"><span class="dot"></span>边搜边记</div>
+        <div class="notes-actions"><button class="notes-btn save">保存</button><button class="notes-btn">导出</button></div>
+      </div>
+      <input class="note-title-input" type="text" placeholder="笔记标题...">
+      <div class="note-toolbar">
+        <button class="toolbar-btn" title="标题"><b>H</b></button>
+        <button class="toolbar-btn" title="加粗"><b>B</b></button>
+        <button class="toolbar-btn" title="斜体"><i>I</i></button>
+        <div class="toolbar-divider"></div>
+        <button class="toolbar-btn" title="无序列表">☰</button>
+        <button class="toolbar-btn" title="有序列表">≡</button>
+        <div class="toolbar-divider"></div>
+        <button class="toolbar-btn" title="代码块">{ }</button>
+        <button class="toolbar-btn" title="引用">❝</button>
+        <div class="toolbar-divider"></div>
+        <button class="toolbar-btn" title="撤销">↺</button>
+        <button class="toolbar-btn" title="重做">↻</button>
+      </div>
+      <div class="note-editor"><textarea placeholder="边搜边记...&#10;&#10;在这里记录知识点、答题要点、易混淆概念..."></textarea></div>
+      <div class="quick-notes">
+        <div class="quick-notes-label">最近笔记</div>
+        <span class="quick-note-chip">📌 供需曲线分析</span>
+        <span class="quick-note-chip">📌 企业战略理论</span>
+        <span class="quick-note-chip">📌 财务报表分析</span>
+      </div>
+    </aside>
+  </div>
+
+  <div class="statusbar">
+    <div class="statusbar-dot"></div>
+    <span>经管模块</span>
+    <span style="margin-left:auto">v1.0.0</span>
+  </div>
+
+  <script>
+    function submitAnswer(n) {
+      const card = document.querySelectorAll('.exercise-card')[n - 1];
+      const textarea = card.querySelector('.exercise-textarea');
+      const result = document.getElementById('result-' + n);
+      if (!textarea.value.trim()) { textarea.focus(); return; }
+      result.className = 'exercise-result show partial';
+      result.innerHTML = '<strong>待核对</strong> — AI 正在分析你的答案，比对关键踩分点...（接入 DeepSeek API 后将显示详细核对结果）';
+      result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  </script>
+</body>
+</html>
